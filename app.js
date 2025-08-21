@@ -5,7 +5,7 @@ const config = {
     // Public Pages repo (where admin is hosted)
     public: {
         owner: 'HarleyTG-O',
-        repo: 'harleys-flight-bay',
+        repo: 'harleys-flight-bay.main',
         branch: 'main',
     },
     // Private data repo (where JSON database lives)
