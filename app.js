@@ -81,7 +81,9 @@ async function ghJson(url) {
 
 // Read a file's content via GitHub Contents API and decode to text
 async function ghGetContent(owner, repo, path, ref) {
-    const url = `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}?ref=${encodeURIComponent(ref)}`;
+    // Encode each path segment, but keep slashes as separators
+    const safePath = path.split('/').map(encodeURIComponent).join('/');
+    const url = `https://api.github.com/repos/${owner}/${repo}/contents/${safePath}?ref=${encodeURIComponent(ref)}`;
     const res = await fetch(url, { headers: ghHeaders() });
     if (res.status === 404) return null;
     if (!res.ok) throw new Error(`GitHub API error ${res.status}`);
