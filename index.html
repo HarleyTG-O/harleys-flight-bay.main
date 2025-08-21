@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>HFB Admin</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div id="app">
+        <div id="welcome-view" class="card">
+            <h1>Welcome to HFB Admin</h1>
+            <p>Manage the user database directly from your browser. This admin runs entirely on GitHub Pages.</p>
+            <details style="margin: 12px 0;">
+                <summary>GitHub access (use a token for private data repo)</summary>
+                <p class="muted">Paste a GitHub token with read/write Contents permission for the private data repo. The token is stored only in your browser (<code>localStorage</code>).</p>
+                <label for="gh-token">GitHub Token</label>
+                <input id="gh-token" type="password" placeholder="ghp_...">
+                <div class="actions">
+                    <button id="save-token" type="button">Save token</button>
+                    <button id="clear-token" type="button">Clear token</button>
+                </div>
+            </details>
+            <div class="actions">
+                <button id="go-to-login">Continue</button>
+            </div>
+        </div>
+
+        <div id="login-view" class="card hidden">
+            <h1>Admin Login</h1>
+            <p>Sign in with your username and password.</p>
+            <form id="login-form">
+                <label for="username">Username</label>
+                <input id="username" name="username" type="text" autocomplete="username" required>
+                <label for="password">Password</label>
+                <input id="password" name="password" type="password" autocomplete="current-password" required>
+                <button type="submit">Login</button>
+                <p id="login-error" class="error" aria-live="polite"></p>
+            </form>
+        </div>
+
+        <div id="dashboard-view" class="hidden">
+            <header class="toolbar">
+                <div class="left">
+                    <h1>HFB Admin</h1>
+                    <span id="repo-label"></span>
+                </div>
+                <div class="right">
+                    <input id="search" type="search" placeholder="Search username or user_id...">
+                    <button id="export-csv">Export CSV</button>
+                    <button id="logout">Logout</button>
+                </div>
+            </header>
+
+            <section class="stats" id="stats"></section>
+
+            <section id="user-admin" class="card hidden" style="max-width: 100%; margin-top: 16px;">
+                <h2>User Management</h2>
+                <p id="user-admin-note" class="muted">Owner only. To save changes from the browser, add a GitHub token to localStorage under <code>hfb_admin_token</code> with repo contents:write permission.</p>
+                <form id="add-user-form" style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; align-items: end;">
+                    <div>
+                        <label for="new-username">Username</label>
+                        <input id="new-username" type="text" placeholder="e.g. support01">
+                    </div>
+                    <div>
+                        <label for="new-role">Role</label>
+                        <select id="new-role">
+                            <option value="agent">agent</option>
+                            <option value="owner">owner</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="new-password">Password</label>
+                        <input id="new-password" type="password" placeholder="Set password">
+                    </div>
+                    <div>
+                        <label for="new-password2">Confirm</label>
+                        <input id="new-password2" type="password" placeholder="Confirm password">
+                    </div>
+                    <div>
+                        <button id="add-user-btn" type="submit">Add User</button>
+                    </div>
+                </form>
+                <div class="table-wrapper" style="margin-top: 12px;">
+                    <table id="users-admin-table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Role</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <p id="user-admin-error" class="error" aria-live="polite"></p>
+                <p id="user-admin-success" style="color:#22c55e;"></p>
+            </section>
+
+            <div class="table-wrapper">
+                <table id="users-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>User ID</th>
+                            <th>Created</th>
+                            <th>Total Orders</th>
+                            <th>Completed</th>
+                            <th>Cancelled</th>
+                            <th>Total Spent</th>
+                            <th>Last Completed</th>
+                            <th>Last Order ID</th>
+                            <th>Folder</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="./app.js" type="module"></script>
+    <noscript>This admin requires JavaScript enabled.</noscript>
+</body>
+</html>
+
+
