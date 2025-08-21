@@ -99,11 +99,44 @@ async function ghGetContent(owner, repo, path, ref) {
     return text;
 }
 
-// Direct fetch from explicit URL (e.g., raw.githubusercontent.com with token query)
+// Direct fetch from explicit URL (supports raw.githubusercontent.com and API fallback with token)
 async function fetchAccountsFromUrl(url) {
-    const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-    if (!res.ok) throw new Error(`Accounts URL error ${res.status}`);
-    return res.json();
+    // 1) Try direct fetch (works for public raw URLs)
+    try {
+        const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+        if (res.ok) {
+            const text = await res.text();
+            try { return JSON.parse(text); } catch {
+                throw new Error('Accounts URL returned non-JSON payload');
+            }
+        }
+    } catch (_) { /* proceed to fallback */ }
+
+    // 2) If URL is a raw link and repo may be private, convert to Contents API and use token
+    const rawMatch = /^https?:\/\/raw\.githubusercontent\.com\/([^\/]+)\/([^\/]+)\/([^\/]+)\/(.+)$/.exec(url);
+    if (rawMatch) {
+        const [, owner, repo, ref, remainingPath] = rawMatch;
+        const safePath = remainingPath.split('/').map(encodeURIComponent).join('/');
+        const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${safePath}?ref=${encodeURIComponent(ref)}`;
+        const res2 = await fetch(apiUrl, { headers: { ...ghHeaders(), 'Accept': 'application/vnd.github.raw' } });
+        if (!res2.ok) throw new Error(`Accounts URL error ${res2.status}`);
+        const text2 = await res2.text();
+        try { return JSON.parse(text2); } catch {
+            throw new Error('Accounts API returned non-JSON payload');
+        }
+    }
+
+    // 3) If URL already points to the Contents API, request raw and parse
+    if (/^https?:\/\/api\.github\.com\/repos\//.test(url)) {
+        const res3 = await fetch(url, { headers: { ...ghHeaders(), 'Accept': 'application/vnd.github.raw' } });
+        if (!res3.ok) throw new Error(`Accounts URL error ${res3.status}`);
+        const text3 = await res3.text();
+        try { return JSON.parse(text3); } catch {
+            throw new Error('Accounts API returned non-JSON payload');
+        }
+    }
+
+    throw new Error('Accounts URL error: unsupported or inaccessible URL');
 }
 
 async function listUserFolders(owner, repo, branch, dataDir) {
