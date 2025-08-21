@@ -65,10 +65,13 @@ async function loginWithAccount(username, password, users) {
 
 function logout() { clearSession(); }
 
-function ghHeaders() {
-    const headers = { 'Accept': 'application/vnd.github.v3+json' };
-    // Optional: if you place a token in localStorage (read-only repo token), it will use it to avoid rate limits
-    const token = localStorage.getItem('hfb_admin_token');
+function ghHeaders(tokenOverride) {
+    const headers = {
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+    };
+    // Optional: if you place a token in localStorage (read/write repo token), it will use it to avoid rate limits
+    const token = tokenOverride || localStorage.getItem('hfb_admin_token');
     if (token) headers['Authorization'] = `Bearer ${token}`;
     return headers;
 }
@@ -161,7 +164,7 @@ async function fetchAccounts(owner, repo, branch) {
 async function saveAccounts(owner, repo, branch, accounts, token) {
     if (!token) throw new Error('Missing token: set read/write repo token in localStorage as hfb_admin_token');
     const getUrl = `https://api.github.com/repos/${owner}/${repo}/contents/admin/users.json?ref=${encodeURIComponent(branch)}`;
-    const getRes = await fetch(getUrl, { headers: ghHeaders() });
+    const getRes = await fetch(getUrl, { headers: ghHeaders(token) });
     let sha = null;
     if (getRes.ok) {
         const meta = await getRes.json();
@@ -175,8 +178,13 @@ async function saveAccounts(owner, repo, branch, accounts, token) {
         branch,
         sha,
     };
-    const res = await fetch(putUrl, { method: 'PUT', headers: ghHeaders(), body: JSON.stringify(body) });
-    if (!res.ok) throw new Error(`Failed to save users.json (${res.status})`);
+    const res = await fetch(putUrl, { method: 'PUT', headers: ghHeaders(token), body: JSON.stringify(body) });
+    if (!res.ok) {
+        if (res.status === 404) {
+            throw new Error(`Failed to save users.json (404). Token likely lacks access to ${owner}/${repo} or the repo is private without proper permissions. Ensure Contents: Read & Write and explicit access to this repository, and that branch "${branch}" exists.`);
+        }
+        throw new Error(`Failed to save users.json (${res.status})`);
+    }
     return res.json();
 }
 
