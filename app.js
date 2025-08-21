@@ -14,8 +14,8 @@ const config = {
         repo: 'harleys-flight-bay',
         branch: 'main',
     },
-    // Optional explicit accounts URL (raw JSON). Prefer this first, but fall back to repo if it fails
-    accountsUrl: 'https://raw.githubusercontent.com/HarleyTG-O/harleys-flight-bay/main/admin/users.json',
+    // Optional explicit accounts URL (prefer API so token auth works for private repos)
+    accountsUrl: 'https://api.github.com/repos/HarleyTG-O/harleys-flight-bay/contents/admin/users.json?ref=main',
     dataDir: 'User Database',
     ownerUsername: null,
 };
