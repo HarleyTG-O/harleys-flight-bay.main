@@ -27,6 +27,16 @@
                 <button type="submit">Login</button>
                 <p id="login-error" class="error" aria-live="polite"></p>
             </form>
+            <div class="card" style="margin-top: 12px;">
+                <h2>GitHub Token (optional)</h2>
+                <p class="muted">Stored locally in your browser to increase API limits and enable saving.</p>
+                <label for="gh-token">Personal Access Token</label>
+                <input id="gh-token" type="password" placeholder="ghp_..." autocomplete="off">
+                <div class="actions" style="margin-top: 8px;">
+                    <button id="save-token" type="button">Save Token</button>
+                    <button id="clear-token" type="button">Clear</button>
+                </div>
+            </div>
         </div>
 
         <div id="dashboard-view" class="hidden">

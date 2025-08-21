@@ -105,8 +105,26 @@ async function fetchAccountsFromUrl(url) {
 
 async function listUserFolders(owner, repo, branch, dataDir) {
     const base = `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponent(dataDir)}?ref=${encodeURIComponent(branch)}`;
-    const items = await ghJson(base);
-    return items.filter(x => x.type === 'dir').map(x => x.name);
+    try {
+        const items = await ghJson(base);
+        return items.filter(x => x.type === 'dir').map(x => x.name);
+    } catch (err) {
+        const is404 = err && typeof err.message === 'string' && err.message.includes('404');
+        if (is404 && (owner !== config.public.owner || repo !== config.public.repo)) {
+            const fallbackUrl = `https://api.github.com/repos/${config.public.owner}/${config.public.repo}/contents/${encodeURIComponent(dataDir)}?ref=${encodeURIComponent(config.public.branch)}`;
+            try {
+                const items = await ghJson(fallbackUrl);
+                return items.filter(x => x.type === 'dir').map(x => x.name);
+            } catch (err2) {
+                const is404b = err2 && typeof err2.message === 'string' && err2.message.includes('404');
+                if (is404b) {
+                    throw new Error(`Data directory not found in repos. Tried: ${base} and ${fallbackUrl}`);
+                }
+                throw err2;
+            }
+        }
+        throw err;
+    }
 }
 
 async function fetchUserProfile(owner, repo, branch, dataDir, folder) {
