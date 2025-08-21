@@ -14,6 +14,8 @@ const config = {
         repo: 'harleys-flight-bay',
         branch: 'main',
     },
+    // Optional explicit accounts URL (raw JSON), if set this will be used first
+    accountsUrl: 'https://raw.githubusercontent.com/HarleyTG-O/harleys-flight-bay/refs/heads/main/admin/users.json?token=GHSAT0AAAAAADIMPH77DIPXNVDAAE3C3KHI2FGQW4Q',
     dataDir: 'User Database',
     ownerUsername: null,
 };
@@ -90,6 +92,13 @@ async function ghGetContent(owner, repo, path, ref) {
     for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
     const text = new TextDecoder().decode(bytes);
     return text;
+}
+
+// Direct fetch from explicit URL (e.g., raw.githubusercontent.com with token query)
+async function fetchAccountsFromUrl(url) {
+    const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+    if (!res.ok) throw new Error(`Accounts URL error ${res.status}`);
+    return res.json();
 }
 
 async function listUserFolders(owner, repo, branch, dataDir) {
@@ -297,9 +306,17 @@ async function main() {
         });
     }
 
-    // Preload accounts for login
+    // Preload accounts for login (try explicit URL, then private repo, then public fallback)
     let accounts = { users: [] };
-    try { accounts = await fetchAccounts(config.data.owner, config.data.repo, config.data.branch); } catch (e) { console.warn(e); }
+    if (config.accountsUrl) {
+        try { accounts = await fetchAccountsFromUrl(config.accountsUrl); } catch (e) { console.warn('accounts (url) error:', e); }
+    }
+    if (!accounts.users || accounts.users.length === 0) {
+        try { accounts = await fetchAccounts(config.data.owner, config.data.repo, config.data.branch); } catch (e) { console.warn('accounts (private) error:', e); }
+    }
+    if (!accounts.users || accounts.users.length === 0) {
+        try { accounts = await fetchAccounts(config.public.owner, config.public.repo, config.public.branch); } catch (e) { console.warn('accounts (public) error:', e); }
+    }
 
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -333,7 +350,18 @@ async function initDashboard(preloadedAccounts) {
         const session = getSession();
         const role = session?.role || 'support';
         // Load accounts if not provided
-        const accounts = preloadedAccounts || await fetchAccounts(config.data.owner, config.data.repo, config.data.branch);
+        let accounts = preloadedAccounts;
+        if (!accounts) {
+            if (config.accountsUrl) {
+                try { accounts = await fetchAccountsFromUrl(config.accountsUrl); } catch (e) { console.warn('accounts (url) error:', e); }
+            }
+            if (!accounts || !accounts.users || accounts.users.length === 0) {
+                try { accounts = await fetchAccounts(config.data.owner, config.data.repo, config.data.branch); } catch (e) { console.warn('accounts (private) error:', e); }
+            }
+            if (!accounts || !accounts.users || accounts.users.length === 0) {
+                try { accounts = await fetchAccounts(config.public.owner, config.public.repo, config.public.branch); } catch (e) { console.warn('accounts (public) error:', e); }
+            }
+        }
         setupUserAdminUI(accounts, role);
         const allUsers = await collectAllUsers(config.data.owner, config.data.repo, config.data.branch, config.dataDir);
         window.__ALL_USERS__ = allUsers;
@@ -349,7 +377,7 @@ async function initDashboard(preloadedAccounts) {
 function setupUserAdminUI(accounts, role) {
     const section = document.getElementById('user-admin');
     if (!section) return;
-    if (role !== 'admin') { section.classList.add('hidden'); return; }
+    if (role !== 'admin' && role !== 'owner') { section.classList.add('hidden'); return; }
     section.classList.remove('hidden');
 
     // Render table
