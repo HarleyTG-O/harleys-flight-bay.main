@@ -3,32 +3,22 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>HFB Admin</title>
+    <title>Harley's Flight Bay Database</title>
     <link rel="stylesheet" href="./style.css">
 </head>
 <body>
     <div id="app">
         <div id="welcome-view" class="card">
-            <h1>Welcome to HFB Admin</h1>
-            <p>Manage the user database directly from your browser. This admin runs entirely on GitHub Pages.</p>
-            <details style="margin: 12px 0;">
-                <summary>GitHub access (use a token for private data repo)</summary>
-                <p class="muted">Paste a GitHub token with read/write Contents permission for the private data repo. The token is stored only in your browser (<code>localStorage</code>).</p>
-                <label for="gh-token">GitHub Token</label>
-                <input id="gh-token" type="password" placeholder="ghp_...">
-                <div class="actions">
-                    <button id="save-token" type="button">Save token</button>
-                    <button id="clear-token" type="button">Clear token</button>
-                </div>
-            </details>
+            <h1>Welcome to Harley's Flight Bay Database</h1>
+            <p>Secure portal for Admin and Support to view and manage Harley's Flight Bay user data.</p>
             <div class="actions">
                 <button id="go-to-login">Continue</button>
             </div>
         </div>
 
         <div id="login-view" class="card hidden">
-            <h1>Admin Login</h1>
-            <p>Sign in with your username and password.</p>
+            <h1>Login</h1>
+            <p>Login as a Support Agent or Admin.</p>
             <form id="login-form">
                 <label for="username">Username</label>
                 <input id="username" name="username" type="text" autocomplete="username" required>
@@ -42,7 +32,7 @@
         <div id="dashboard-view" class="hidden">
             <header class="toolbar">
                 <div class="left">
-                    <h1>HFB Admin</h1>
+                    <h1>Harley's Flight Bay Database</h1>
                     <span id="repo-label"></span>
                 </div>
                 <div class="right">
@@ -56,7 +46,7 @@
 
             <section id="user-admin" class="card hidden" style="max-width: 100%; margin-top: 16px;">
                 <h2>User Management</h2>
-                <p id="user-admin-note" class="muted">Owner only. To save changes from the browser, add a GitHub token to localStorage under <code>hfb_admin_token</code> with repo contents:write permission.</p>
+                <p id="user-admin-note" class="muted">Admin only.</p>
                 <form id="add-user-form" style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; align-items: end;">
                     <div>
                         <label for="new-username">Username</label>
@@ -65,8 +55,8 @@
                     <div>
                         <label for="new-role">Role</label>
                         <select id="new-role">
-                            <option value="agent">agent</option>
-                            <option value="owner">owner</option>
+                            <option value="support">Support</option>
+                            <option value="admin">Admin</option>
                         </select>
                     </div>
                     <div>

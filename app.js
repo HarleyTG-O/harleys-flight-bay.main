@@ -4,14 +4,14 @@
 const config = {
     // Public Pages repo (where admin is hosted)
     public: {
-        owner: null,
-        repo: null,
+        owner: 'HarleyTG-O',
+        repo: 'harleys-flight-bay.',
         branch: 'main',
     },
     // Private data repo (where JSON database lives)
     data: {
-        owner: null,
-        repo: null,
+        owner: 'HarleyTG-O',
+        repo: 'harleys-flight-bay',
         branch: 'main',
     },
     dataDir: 'User Database',
@@ -331,7 +331,7 @@ async function initDashboard(preloadedAccounts) {
             throw new Error('Repo not set. Set config.owner and config.repo in admin/app.js or host on GitHub Pages under OWNER.github.io/REPO');
         }
         const session = getSession();
-        const role = session?.role || 'agent';
+        const role = session?.role || 'support';
         // Load accounts if not provided
         const accounts = preloadedAccounts || await fetchAccounts(config.data.owner, config.data.repo, config.data.branch);
         setupUserAdminUI(accounts, role);
@@ -349,7 +349,7 @@ async function initDashboard(preloadedAccounts) {
 function setupUserAdminUI(accounts, role) {
     const section = document.getElementById('user-admin');
     if (!section) return;
-    if (role !== 'owner') { section.classList.add('hidden'); return; }
+    if (role !== 'admin') { section.classList.add('hidden'); return; }
     section.classList.remove('hidden');
 
     // Render table
