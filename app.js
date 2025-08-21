@@ -14,8 +14,8 @@ const config = {
         repo: 'harleys-flight-bay',
         branch: 'main',
     },
-    // Optional explicit accounts URL (raw JSON), if set this will be used exclusively
-    accountsUrl: 'https://raw.githubusercontent.com/HarleyTG-O/harleys-flight-bay/refs/heads/main/admin/users.json?token=GHSAT0AAAAAADIMPH77EBODHCSJZ2IME74Y2FGR3HQ',
+    // Optional explicit accounts URL (raw JSON). Prefer this first, but fall back to repo if it fails
+    accountsUrl: 'https://raw.githubusercontent.com/HarleyTG-O/harleys-flight-bay/main/admin/users.json',
     dataDir: 'User Database',
     ownerUsername: null,
 };
@@ -335,19 +335,16 @@ async function main() {
     }
 
     // Preload accounts for login
-    // If accountsUrl is set, use it exclusively; otherwise, try data repo then public repo
+    // If accountsUrl is set, try it first; fall back to data repo then public repo
     let accounts = { users: [] };
     if (config.accountsUrl) {
-        try {
-            accounts = await fetchAccountsFromUrl(config.accountsUrl);
-        } catch (e) {
-            console.warn('accounts (url) error:', e);
-        }
-    } else {
+        try { accounts = await fetchAccountsFromUrl(config.accountsUrl); } catch (e) { console.warn('accounts (url) error:', e); }
+    }
+    if (!accounts.users || accounts.users.length === 0) {
         try { accounts = await fetchAccounts(config.data.owner, config.data.repo, config.data.branch); } catch (e) { console.warn('accounts (private) error:', e); }
-        if (!accounts.users || accounts.users.length === 0) {
-            try { accounts = await fetchAccounts(config.public.owner, config.public.repo, config.public.branch); } catch (e) { console.warn('accounts (public) error:', e); }
-        }
+    }
+    if (!accounts.users || accounts.users.length === 0) {
+        try { accounts = await fetchAccounts(config.public.owner, config.public.repo, config.public.branch); } catch (e) { console.warn('accounts (public) error:', e); }
     }
 
     loginForm.addEventListener('submit', async (e) => {
@@ -386,13 +383,12 @@ async function initDashboard(preloadedAccounts) {
         if (!accounts) {
             if (config.accountsUrl) {
                 try { accounts = await fetchAccountsFromUrl(config.accountsUrl); } catch (e) { console.warn('accounts (url) error:', e); }
-            } else {
-                if (!accounts || !accounts.users || accounts.users.length === 0) {
-                    try { accounts = await fetchAccounts(config.data.owner, config.data.repo, config.data.branch); } catch (e) { console.warn('accounts (private) error:', e); }
-                }
-                if (!accounts || !accounts.users || accounts.users.length === 0) {
-                    try { accounts = await fetchAccounts(config.public.owner, config.public.repo, config.public.branch); } catch (e) { console.warn('accounts (public) error:', e); }
-                }
+            }
+            if (!accounts || !accounts.users || accounts.users.length === 0) {
+                try { accounts = await fetchAccounts(config.data.owner, config.data.repo, config.data.branch); } catch (e) { console.warn('accounts (private) error:', e); }
+            }
+            if (!accounts || !accounts.users || accounts.users.length === 0) {
+                try { accounts = await fetchAccounts(config.public.owner, config.public.repo, config.public.branch); } catch (e) { console.warn('accounts (public) error:', e); }
             }
         }
         setupUserAdminUI(accounts, role);
