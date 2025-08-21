@@ -5,7 +5,7 @@ const config = {
     // Public Pages repo (where admin is hosted)
     public: {
         owner: 'HarleyTG-O',
-        repo: 'harleys-flight-bay.',
+        repo: 'harleys-flight-bay',
         branch: 'main',
     },
     // Private data repo (where JSON database lives)
@@ -15,7 +15,7 @@ const config = {
         branch: 'main',
     },
     // Optional explicit accounts URL (raw JSON), if set this will be used first
-    accountsUrl: 'https://raw.githubusercontent.com/HarleyTG-O/harleys-flight-bay/refs/heads/main/admin/users.json?token=GHSAT0AAAAAADIMPH77DIPXNVDAAE3C3KHI2FGQW4Q',
+    accountsUrl: null,
     dataDir: 'User Database',
     ownerUsername: null,
 };
